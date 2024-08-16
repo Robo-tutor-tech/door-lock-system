@@ -52,12 +52,13 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
+  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
 
   // Init with high specs to pre-allocate larger buffers
   if (psramFound()) {
     config.frame_size = FRAMESIZE_UXGA;
     config.jpeg_quality = 10;
-    config.fb_count = 2;
+    config.fb_count = 1;
   } else {
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 12;
@@ -74,7 +75,7 @@ void setup() {
 
 void loop() {
   if (digitalRead(button) == LOW) {
-
+    delay(100);
     camera_fb_t* fb = esp_camera_fb_get();
     if (!fb) {
       Serial.println("Camera capture failed");

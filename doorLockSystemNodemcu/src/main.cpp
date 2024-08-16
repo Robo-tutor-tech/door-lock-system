@@ -1,16 +1,23 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
+#include <SoftwareSerial.h>
 
 const char *ssid = "Robotutor", *password = "Robotutor";
 String serverName = "http://robotutortech.ddns.net:7456";
 void connect();
 String verifyOtp(WiFiClient &client, String data);
 String generateOtp(WiFiClient &client, String data);
+void sendSms(SoftwareSerial &gsm, String text);
 
 void setup()
 {
+  const uint8_t cam = D0;
+  pinMode(cam, OUTPUT);
+  digitalWrite(cam, HIGH);
   Serial.begin(9600);
+  SoftwareSerial gsm(D1, D2);
+  gsm.begin(9600);
   WiFiClient client;
   Serial.println("Welcome");
   connect();
@@ -24,8 +31,22 @@ void setup()
       data.trim();
       if (data.startsWith("GENERATE:"))
       {
+        digitalWrite(cam, LOW);
+        delay(1000);
+        digitalWrite(cam, HIGH);
         String res = generateOtp(client, data.substring(9, 13));
-        Serial.println(res);
+        if (res.startsWith("SMS:"))
+        {
+          sendSms(gsm, res.substring(4));
+        }
+        else
+        {
+          Serial.println(res);
+        }
+        delay(500);
+        digitalWrite(cam, LOW);
+        delay(1000);
+        digitalWrite(cam, HIGH);
       }
       if (data.startsWith("VERIFY:"))
       {
@@ -78,5 +99,21 @@ String generateOtp(WiFiClient &client, String data)
   int httpResponseCode = http.POST(data);
   String response = http.getString();
   http.end();
-  return (httpResponseCode == 200 ? "SMS:" : "ERROR") + response;
+  return (httpResponseCode == 200 ? "SMS:" : "ERROR:") + response;
+}
+
+void sendSms(SoftwareSerial &gsm, String text)
+{
+  gsm.println("AT+CMGF=1");
+  delay(500);
+  Serial.println(text.substring(0, 10));
+  Serial.println(text.substring(10));
+  gsm.print("AT+CMGS=\"+91");
+  gsm.print(text.substring(0, 10));
+  gsm.println("\"");
+  delay(100);
+  gsm.print(text.substring(10));
+  delay(100);
+  gsm.println((char)26);
+  delay(500);
 }
