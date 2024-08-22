@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 
 const char *ssid = "Robotutor", *password = "Robotutor";
-String serverName = "http://robotutortech.ddns.net:7456";
+String serverName = "http://192.168.1.100:3000";
 void connect();
 String verifyOtp(WiFiClient &client, String data);
 String generateOtp(WiFiClient &client, String data);

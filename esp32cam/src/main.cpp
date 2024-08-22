@@ -3,13 +3,13 @@
 #include <HTTPClient.h>
 
 // Replace with your network credentials
-const char* ssid = "Robotutor";
-const char* password = "Robotutor";
+const char *ssid = "Robotutor";
+const char *password = "Robotutor";
 
 // Server URL
-String serverName = "robotutortech.ddns.net";
+String serverName = "192.168.1.100";
 String serverPath = "/upload";
-int serverPort = 7456;
+int serverPort = 3000;
 int button = 14;
 
 // Camera configuration
@@ -18,13 +18,15 @@ int button = 14;
 
 WiFiClient client;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   pinMode(button, INPUT_PULLUP);
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(1000);
     Serial.println("Connecting to WiFi...");
   }
@@ -55,11 +57,14 @@ void setup() {
   config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
 
   // Init with high specs to pre-allocate larger buffers
-  if (psramFound()) {
+  if (psramFound())
+  {
     config.frame_size = FRAMESIZE_UXGA;
     config.jpeg_quality = 10;
     config.fb_count = 1;
-  } else {
+  }
+  else
+  {
     config.frame_size = FRAMESIZE_SVGA;
     config.jpeg_quality = 12;
     config.fb_count = 1;
@@ -67,17 +72,21 @@ void setup() {
 
   // Initialize the camera
   esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK) {
+  if (err != ESP_OK)
+  {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
 }
 
-void loop() {
-  if (digitalRead(button) == LOW) {
+void loop()
+{
+  if (digitalRead(button) == LOW)
+  {
     delay(100);
-    camera_fb_t* fb = esp_camera_fb_get();
-    if (!fb) {
+    camera_fb_t *fb = esp_camera_fb_get();
+    if (!fb)
+    {
       Serial.println("Camera capture failed");
       delay(1000);
       ESP.restart();
@@ -85,7 +94,8 @@ void loop() {
 
     Serial.println("Connecting to server: " + serverName);
 
-    if (client.connect(serverName.c_str(), serverPort)) {
+    if (client.connect(serverName.c_str(), serverPort))
+    {
       Serial.println("Connection successful!");
       String head = "--robotutor\r\nContent-Disposition: form-data; name=\"image\"; filename=\"esp32-cam.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n";
       String tail = "\r\n--robotutor--\r\n";
@@ -101,13 +111,17 @@ void loop() {
       client.println();
       client.print(head);
 
-      uint8_t* fbBuf = fb->buf;
+      uint8_t *fbBuf = fb->buf;
       size_t fbLen = fb->len;
-      for (size_t n = 0; n < fbLen; n += 1024) {
-        if (n + 1024 < fbLen) {
+      for (size_t n = 0; n < fbLen; n += 1024)
+      {
+        if (n + 1024 < fbLen)
+        {
           client.write(fbBuf, 1024);
           fbBuf += 1024;
-        } else if (fbLen % 1024 > 0) {
+        }
+        else if (fbLen % 1024 > 0)
+        {
           size_t remainder = fbLen % 1024;
           client.write(fbBuf, remainder);
         }
