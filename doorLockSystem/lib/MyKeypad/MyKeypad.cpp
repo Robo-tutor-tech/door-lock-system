@@ -1,5 +1,13 @@
 #include <MyKeypad.hpp>
 
+String repeatChar(char c, int times) {
+    String result = "";
+    for (int i = 0; i < times; i++) {
+        result += c;
+    }
+    return result;
+}
+
 MyKeypad::MyKeypad(char *userKeymap, byte *row, byte *col, byte numRows, byte numCols, Buzzer &buzzer, LCD &lcd) : keypad(userKeymap, row, col, numRows, numCols)
 {
   this->buzzer = &buzzer;
@@ -32,7 +40,7 @@ String MyKeypad::readNumber()
         number += key;
         break;
       }
-      this->lcd->println(number + "\n");
+      this->lcd->println(repeatChar('X', number.length()) + "\n");
     }
     delay(50);
   }
@@ -48,3 +56,4 @@ char MyKeypad::getKey()
   }
   return key;
 }
+
